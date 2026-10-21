@@ -11,5 +11,14 @@
   ],
   "category": "레이싱",
   "createdAt": "2026-10",
-  "featured": true
+  "featured": true,
+  "playUrl": "https://kart-rider.vercel.app",
+  "githubUrl": "https://github.com/inhyk/kart-rider",
+  "repo": "inhyk/kart-rider",
+  "thumbnail": "/images/games/kart-rider-thumb.png",
+  "screenshots": [
+    "/images/games/kart-rider-1.png",
+    "/images/games/kart-rider-2.png",
+    "/images/games/kart-rider-3.png"
+  ]
 }
