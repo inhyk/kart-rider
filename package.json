@@ -1,0 +1,18 @@
+{
+  "name": "pocket-grand-prix",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config vite.config.js",
+    "build": "vite build --config vite.config.js --outDir dist",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test core.test.mjs"
+  },
+  "dependencies": {
+    "@babylonjs/core": "9.18.0"
+  },
+  "devDependencies": {
+    "vite": "8.1.5"
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.vercel/
+.env*
+artifacts/
+.pocket-gp-release.json
+.DS_Store
+.omx/
+*.log

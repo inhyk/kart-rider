@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#dfead9" />
+    <meta
+      name="description"
+      content="드리프트로 터보를 모으고 7종 아이템으로 역전! 숲, 협곡, 네온 항구에서 즐기는 3D 카트 레이스."
+    />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <title>카트라이더 · 포켓 그랑프리</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <canvas id="speedlines" aria-hidden="true"></canvas
+    ><canvas id="game" aria-label="3D 카트 레이싱 경기장" tabindex="0"></canvas>
+    <div class="top">
+      <a
+        class="brand"
+        href="https://seonn.dev"
+        target="_top"
+        title="게임 목록으로"
+        ><span class="brand-icon">↗</span> POCKET <b>GRAND PRIX</b></a
+      >
+      <div class="top-actions">
+        <button id="sound" title="소리 켜고 끄기" aria-label="소리 켜고 끄기">
+          ♪ ON</button
+        ><button id="camera" title="C · 카메라 거리 변경" hidden>CAM</button
+        ><button id="pause" title="P · 일시정지" hidden>Ⅱ</button>
+      </div>
+    </div>
+    <div id="loading" role="status" aria-live="polite">
+      <div class="loading-kart">🏎️</div>
+      <strong>트랙을 준비하고 있어요</strong
+      ><span>잠시 후, 신나는 레이스가 시작됩니다.</span>
+      <div class="loadingbar"><i></i></div>
+    </div>
+    <div id="hud" hidden>
+      <div class="position">
+        <strong id="rank">6<span>/ 6</span></strong
+        ><small>POSITION</small>
+        <div id="leaderboard"></div>
+      </div>
+      <div class="raceinfo">
+        <div>
+          <small>LAP</small><b id="lap">1 <i>/ 3</i></b>
+        </div>
+        <div><small>RACE TIME</small><b id="time">00:00.00</b></div>
+      </div>
+      <div class="map">
+        <canvas id="map" width="220" height="200"></canvas
+        ><small id="tracklabel">클로버 파크</small>
+      </div>
+      <div class="speed">
+        <div class="speed-dial">
+          <svg viewBox="0 0 180 140" aria-hidden="true">
+            <path
+              d="M 25 115 A 74 74 0 1 1 155 115"
+              fill="none"
+              stroke="#ffffff30"
+              stroke-width="5"
+            />
+            <path
+              id="speedarc"
+              d="M 25 115 A 74 74 0 1 1 155 115"
+              fill="none"
+              stroke="#fff3c1"
+              stroke-width="5"
+              pathLength="100"
+              stroke-dasharray="0 100"
+            />
+          </svg>
+          <div><strong id="speed">0</strong><span>KM/H</span></div>
+        </div>
+        <div class="meter"><i id="driftbar"></i><span></span></div>
+        <small id="driftlabel">DRIFT → TURBO</small>
+      </div>
+      <div class="item-group">
+        <button id="item" class="item" title="E · 아이템 사용">
+          <span id="itemicon">?</span><b id="itemname">아이템 박스</b
+          ><small>E · 사용</small></button
+        ><button
+          id="swap"
+          class="item secondary-slot"
+          title="Q · 아이템 바꾸기"
+        >
+          <span id="itemicon2">＋</span><small>Q · 교체</small>
+        </button>
+      </div>
+      <button id="nitro" class="nitro" title="Space · 니트로">
+        <span>⚡</span><b id="nitrocount">0</b><small>SPACE · 니트로</small>
+      </button>
+      <div id="toast" class="toast"></div>
+      <div id="countdown"></div>
+      <div id="lapbanner" hidden></div>
+      <div id="warning" hidden>⚠ MISSILE LOCK</div>
+      <div class="racekeys">
+        <span>SHIFT 드리프트</span><span>R 트랙 복귀</span
+        ><span>↓ 브레이크</span>
+      </div>
+      <div id="wrongway" hidden>↶ 반대 방향이에요!</div>
+    </div>
+    <div id="menu" class="overlay" hidden>
+      <section class="intro">
+        <div class="eyebrow"><i></i> THE LITTLE KART. THE BIG RACE.</div>
+        <h1>드리프트의<br /><em>짜릿한 순간.</em></h1>
+        <p>
+          바람을 가르고, 아이템으로 뒤집고.<br />나만의 카트로 달리는 포켓
+          그랑프리.
+        </p>
+        <div class="choose-label"><span>01</span> 오늘은 어디로 달릴까요?</div>
+        <div id="tracks" class="tracks"></div>
+        <div class="choose-label garage-label">
+          <span>02</span> 나의 레이싱 파트너
+        </div>
+        <div id="garage">
+          <div class="kart-buttons" id="karts"></div>
+          <div class="garage-bottom">
+            <div id="paints"></div>
+            <div class="kart-stat" id="kartstat"></div>
+          </div>
+        </div>
+        <div class="options">
+          <label
+            >난이도<select id="difficulty">
+              <option value="0">가볍게</option>
+              <option value="1" selected>신나게</option>
+              <option value="2">치열하게</option>
+            </select></label
+          ><label
+            >모드<select id="mode">
+              <option value="item">아이템전</option>
+              <option value="speed">스피드전</option>
+            </select></label
+          ><label class="assist"
+            ><input id="assist" type="checkbox" checked /> 조향 도움</label
+          >
+        </div>
+        <button id="start" class="start">레이스 시작 <span>→</span></button>
+        <div class="controls">
+          <span><kbd>←</kbd><kbd>→</kbd> 조향</span
+          ><span><kbd>Shift</kbd> 드리프트</span><span><kbd>E</kbd> 아이템</span
+          ><span><kbd>Space</kbd> 니트로</span>
+        </div>
+        <div class="menu-foot">
+          <button id="help">처음이라면? 조작 안내 ↗</button
+          ><span>자동 가속 · 6대 · 3바퀴</span>
+        </div>
+      </section>
+      <div class="circuit-badge">
+        <small>NOW AT</small><b id="previewname">CLOVER PARK</b
+        ><span id="previewsubtitle">바람이 부는 숲의 서킷</span>
+        <div><i></i> LIVE CIRCUIT PREVIEW</div>
+      </div>
+      <div class="fan-note">직접 만든 카트와 코스를 담은 비공식 팬 게임</div>
+    </div>
+    <div
+      id="helppanel"
+      class="overlay center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="조작 안내"
+      hidden
+    >
+      <section class="panel help-panel">
+        <div class="eyebrow">YOUR FIRST GRAND PRIX</div>
+        <h2>이렇게 달려요</h2>
+        <div class="help-grid">
+          <div>
+            <b>01 · 방향을 잡아요</b>
+            <p>
+              카트는 자동으로 가속해요. ← → 또는 A D로 방향을 꺾고, ↓로
+              브레이크를 밟아요. 벽에 부딪히면 속도가 줄어들어요.
+            </p>
+          </div>
+          <div>
+            <b>02 · 드리프트로 터보!</b>
+            <p>
+              코너에서 Shift와 방향키를 같이 눌러요. 게이지가 차면 Shift를 놓아
+              순간 가속! 끝까지 모으면 니트로를 하나 얻어요.
+            </p>
+          </div>
+          <div>
+            <b>03 · 아이템으로 역전</b>
+            <p>
+              황금 박스를 지나 아이템을 모아요. 최대 2개 보관! E로 사용하고 Q로
+              순서를 바꿔요. 미사일 경고가 뜨면 방어막을!
+            </p>
+          </div>
+          <div>
+            <b>04 · 스타트 대시</b>
+            <p>
+              출발 카운트의 마지막 순간에 Space를 누르면 스타트 부스트! 경기
+              중에는 모은 니트로를 Space로 사용해요.
+            </p>
+          </div>
+        </div>
+        <div class="item-guide" id="itemguide"></div>
+        <p class="help-note">
+          모바일은 화면 버튼으로 조작해요. · R 트랙 복귀 · C 카메라 · P
+          일시정지<br />스피드전에서는 아이템 없이 드리프트 실력으로 겨뤄요.
+        </p>
+        <button id="closehelp" class="start">준비됐어요! →</button>
+      </section>
+    </div>
+    <div
+      id="pausepanel"
+      class="overlay center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="일시정지"
+      hidden
+    >
+      <section class="panel">
+        <div class="eyebrow">PIT STOP</div>
+        <h2>잠깐 쉬어가요</h2>
+        <p>나의 카트도, 레이스도 여기서 기다려요.</p>
+        <button id="resume" class="start">계속 달리기 →</button
+        ><button id="recover" class="secondary">트랙으로 복귀</button
+        ><button id="restart" class="secondary">처음부터 다시</button
+        ><button id="quit" class="secondary">코스 선택으로</button>
+      </section>
+    </div>
+    <div
+      id="results"
+      class="overlay center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="경기 결과"
+      hidden
+    >
+      <section class="panel result-panel">
+        <div class="eyebrow">THE CHECKERED FLAG IS YOURS</div>
+        <div class="trophy">🏆</div>
+        <h2 id="resulttitle">멋진 레이스!</h2>
+        <p id="resulttime"></p>
+        <div class="result-stats" id="resultstats"></div>
+        <div class="lap-times" id="laptimes" aria-label="바퀴별 기록"></div>
+        <div id="standings"></div>
+        <p id="best"></p>
+        <button id="again" class="start">한 번 더 달리기 →</button
+        ><button id="back" class="secondary">다른 코스 선택</button>
+      </section>
+    </div>
+    <div id="touch" hidden>
+      <div class="touch-left">
+        <button data-control="left" aria-label="왼쪽으로 조향">◀</button
+        ><button data-control="right" aria-label="오른쪽으로 조향">▶</button>
+      </div>
+      <div class="touch-right">
+        <button data-control="brake" aria-label="브레이크">감속</button
+        ><button data-control="drift" class="touch-drift" aria-label="드리프트">
+          DRIFT</button
+        ><button id="touchitem" aria-label="아이템 사용">🎁</button>
+      </div>
+    </div>
+    <div id="fatal" role="alert" hidden>
+      <b>트랙을 불러오지 못했어요</b>
+      <p>브라우저를 새로고침해 주세요.</p>
+      <button onclick="location.reload()">다시 열기</button>
+      <pre id="fatalmessage"></pre>
+    </div>
+    <script>
+      // This also catches module-download or parse errors before the game can boot.
+      window.addEventListener(
+        "error",
+        function (event) {
+          var fatal = document.getElementById("fatal");
+          if (!fatal) return;
+          fatal.hidden = false;
+          document.getElementById("loading").hidden = true;
+          document.getElementById("fatalmessage").textContent =
+            event.message ||
+            "게임 파일을 불러오지 못했어요. 새로고침해 주세요.";
+        },
+        true,
+      );
+    </script>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
