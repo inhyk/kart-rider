@@ -1,3 +1,4 @@
+import { createTournament, recordRound, standings, advanceRound, POINTS } from "./tournament.mjs";
 import { Engine, Vector3 } from "./graphics.js";
 import {
   COURSES,
@@ -62,6 +63,7 @@ let engine,
   world,
   fx,
   G = null,
+  cup = null,
   last = performance.now(),
   elapsed = 0,
   accum = 0,
@@ -264,6 +266,25 @@ function makeUI() {
 }
 function start() {
   if (changing) return;
+  cup = createTournament(settings.track, createRace(settings).racers);
+  beginRound();
+}
+function nextRound() {
+  if (!cup || G?.mode !== "finished" || !shownResult) return;
+  if (advanceRound(cup)) beginRound();
+  else {
+    cup = createTournament(cup.tracks[0], G.racers);
+    beginRound();
+  }
+}
+function beginRound() {
+  if (changing || !cup) return;
+  const track = cup.tracks[cup.round];
+  if (settings.track !== track) {
+    G = null;
+    settings.track = track;
+    rebuild();
+  }
   audio.start();
   fx.clear();
   G = createRace(settings);
@@ -295,6 +316,14 @@ function start() {
 function menu() {
   clearInput();
   G = null;
+  if (cup) {
+    const firstTrack = cup.tracks[0];
+    cup = null;
+    if (settings.track !== firstTrack) {
+      settings.track = firstTrack;
+      rebuild();
+    }
+  }
   fx.clear();
   $("menu").hidden = false;
   for (const id of [
@@ -343,8 +372,6 @@ function results() {
   $("touch").hidden = true;
   $("pause").hidden = true;
   $("again").focus();
-  $("resulttitle").textContent =
-    G.rank === 1 ? "챔피언의 탄생!" : `${G.rank}등! 끝까지 멋진 질주!`;
   $("resulttime").textContent = G.course.name + " · " + format(finishTime);
   $("resultstats").replaceChildren(
     ...[
@@ -360,6 +387,30 @@ function results() {
     }),
   );
   const sorted = [...G.racers].sort((a, b) => rankOf(G, a) - rankOf(G, b));
+  recordRound(cup, sorted.map((r) => r.id));
+  const overall = standings(cup),
+    final = cup.rounds.length === cup.tracks.length,
+    playerPlace = overall.findIndex((r) => r.id === 0) + 1;
+  $("resulttitle").textContent = final
+    ? (playerPlace === 1 ? "토너먼트 챔피언!" : `토너먼트 최종 ${playerPlace}위!`)
+    : `${cup.round + 1}라운드 · ${G.rank}위 완주!`;
+  $("cupeyebrow").textContent = final ? "GRAND PRIX · FINAL RESULTS" : `GRAND PRIX · ROUND ${cup.round + 1} / 3`;
+  $("cuptitle").textContent = final ? "🏆 최종 종합 순위" : "🏁 토너먼트 누적 순위";
+  $("cupstandings").replaceChildren(...overall.map((r, index) => {
+    const row = document.createElement("div");
+    row.className = r.id === 0 ? "me" : "";
+    const name = document.createElement("span"), scores = document.createElement("small"), total = document.createElement("b");
+    name.textContent = `${index + 1}  ${r.name}${r.id === 0 ? " ★" : ""}`;
+    scores.textContent = r.places.map((place) => `+${POINTS[place - 1]}`).join(" / ");
+    total.textContent = `${r.points}점`;
+    row.append(name, scores, total);
+    return row;
+  }));
+  $("cupnext").textContent = final
+    ? `우승 · ${overall[0].name} · ${overall[0].points}점`
+    : `다음 코스 · ${COURSES[cup.tracks[cup.round + 1]].name}`;
+  $("again").textContent = final ? "새 토너먼트 시작 →" : `다음 라운드 (${cup.round + 2}/3) →`;
+  $("roundroute").textContent = cup.tracks.map((track, i) => `${i < cup.rounds.length ? "✓ " : ""}${COURSES[track].name}`).join(" → ");
   const laps = G.racers[0].lapTimes,
     bestLap = Math.min(...laps);
   $("laptimes").replaceChildren(
@@ -458,6 +509,7 @@ function updateHUD() {
   $("rank").innerHTML = G.rank + "<span>/ 6</span>";
   $("lap").innerHTML = lap + " <i>/ " + G.course.laps + "</i>";
   $("time").textContent = format(p.finished ? p.finishTime : G.time);
+  $("cupround").textContent = `ROUND ${cup ? cup.round + 1 : 1} / 3`;
   $("speed").textContent = Math.round(p.speed * 3.6);
   $("speedarc").setAttribute(
     "stroke-dasharray",
@@ -704,8 +756,8 @@ function bindControls() {
       b.addEventListener(type, () => (input[b.dataset.control] = false));
   }
   $("start").onclick = start;
-  $("again").onclick = start;
-  $("restart").onclick = start;
+  $("again").onclick = nextRound;
+  $("restart").onclick = beginRound;
   $("back").onclick = menu;
   $("quit").onclick = menu;
   $("pause").onclick = pause;
@@ -838,6 +890,7 @@ try {
     JSON.stringify(
       G
         ? {
+            tournament: cup,
             mode: G.mode,
             track: G.course.id,
             rank: G.rank,
@@ -876,6 +929,7 @@ try {
           },
     );
   window.__kart = {
+    get tournament() { return cup; },
     get audioState() {
       return {
         voices: audio.voices.size,

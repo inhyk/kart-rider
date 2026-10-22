@@ -46,6 +46,7 @@
         <div id="leaderboard"></div>
       </div>
       <div class="raceinfo">
+        <span id="cupround" class="cup-round">ROUND 1 / 3</span>
         <div>
           <small>LAP</small><b id="lap">1 <i>/ 3</i></b>
         </div>
@@ -112,7 +113,7 @@
           바람을 가르고, 아이템으로 뒤집고.<br />나만의 카트로 달리는 포켓
           그랑프리.
         </p>
-        <div class="choose-label"><span>01</span> 오늘은 어디로 달릴까요?</div>
+        <div class="choose-label"><span>01</span> 토너먼트 첫 코스를 골라요</div>
         <div id="tracks" class="tracks"></div>
         <div class="choose-label garage-label">
           <span>02</span> 나의 레이싱 파트너
@@ -140,7 +141,8 @@
             ><input id="assist" type="checkbox" checked /> 조향 도움</label
           >
         </div>
-        <button id="start" class="start">레이스 시작 <span>→</span></button>
+        <div class="cup-intro"><b>🏆 3라운드 토너먼트</b><span>세 코스의 점수를 모아 종합 우승에 도전!</span><small>1~6위 · 10 / 7 / 5 / 3 / 2 / 1점</small></div>
+        <button id="start" class="start">토너먼트 시작 <span>→</span></button>
         <div class="controls">
           <span><kbd>←</kbd><kbd>→</kbd> 조향</span
           ><span><kbd>Shift</kbd> 드리프트</span><span><kbd>E</kbd> 아이템</span
@@ -221,7 +223,7 @@
         <p>나의 카트도, 레이스도 여기서 기다려요.</p>
         <button id="resume" class="start">계속 달리기 →</button
         ><button id="recover" class="secondary">트랙으로 복귀</button
-        ><button id="restart" class="secondary">처음부터 다시</button
+        ><button id="restart" class="secondary">이번 라운드 다시</button
         ><button id="quit" class="secondary">코스 선택으로</button>
       </section>
     </div>
@@ -234,16 +236,25 @@
       hidden
     >
       <section class="panel result-panel">
-        <div class="eyebrow">THE CHECKERED FLAG IS YOURS</div>
+        <div class="eyebrow" id="cupeyebrow">GRAND PRIX</div>
         <div class="trophy">🏆</div>
         <h2 id="resulttitle">멋진 레이스!</h2>
         <p id="resulttime"></p>
+        <section class="cup-board" aria-label="토너먼트 종합 순위">
+          <h3 id="cuptitle">토너먼트 누적 순위</h3>
+          <div id="cupstandings"></div>
+          <p id="cupnext"></p>
+          <small id="roundroute"></small>
+        </section>
+        <details class="round-detail"><summary>이번 라운드 기록 · 점수 규칙</summary>
+          <p>내가 결승선을 통과한 순간의 순위로 점수를 받아요. 동점은 높은 순위 횟수, 마지막 라운드 순위 순으로 정해요.</p>
         <div class="result-stats" id="resultstats"></div>
         <div class="lap-times" id="laptimes" aria-label="바퀴별 기록"></div>
-        <div id="standings"></div>
+          <div id="standings"></div>
+        </details>
         <p id="best"></p>
         <button id="again" class="start">한 번 더 달리기 →</button
-        ><button id="back" class="secondary">다른 코스 선택</button>
+        ><button id="back" class="secondary">대회 나가기 · 로비</button>
       </section>
     </div>
     <div id="touch" hidden>
