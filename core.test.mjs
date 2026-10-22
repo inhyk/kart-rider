@@ -403,3 +403,18 @@ test("attacks, recovery and water trajectories respect the height of raised road
   assert.equal(p.y, sample(g.course, p.s).y);
   assert.ok(p.y > 8);
 });
+
+test('steering assistance never pulls a released heading back toward the road', () => {
+  for (let track = 0; track < 3; track++) {
+    const g = race(track, { mode: 'speed', assist: true });
+    const r = g.racers[0];
+    place(g, r, 120, 0);
+    r.angle = wrapAngle(r.angle + 0.25);
+    r.moveAngle = r.angle;
+    r.speed = 8;
+    const heading = r.angle, start = r.s;
+    simulate(g, 0.3);
+    assert.ok(Math.abs(wrapAngle(r.angle - heading)) < 0.000001, 'released heading must stay under player control');
+    assert.ok(r.s > start && r.s - start < 10, 'assistance cannot teleport progress back to the goal');
+  }
+});

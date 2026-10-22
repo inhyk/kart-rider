@@ -138,7 +138,7 @@
               <option value="speed">스피드전</option>
             </select></label
           ><label class="assist"
-            ><input id="assist" type="checkbox" checked /> 조향 도움</label
+            ><input id="assist" title="조작을 안정시켜요. 진행 방향은 직접 정해요." type="checkbox" checked /> 조향 도움</label
           >
         </div>
         <div class="cup-intro"><b>🏆 3라운드 토너먼트</b><span>세 코스의 점수를 모아 종합 우승에 도전!</span><small>1~6위 · 10 / 7 / 5 / 3 / 2 / 1점</small></div>
@@ -253,6 +253,8 @@
           <div id="standings"></div>
         </details>
         <p id="best"></p>
+        <p id="autonext" role="status"></p>
+        <button id="holdnext" class="secondary" hidden>자동 이동 멈추기</button>
         <button id="again" class="start">한 번 더 달리기 →</button
         ><button id="back" class="secondary">대회 나가기 · 로비</button>
       </section>

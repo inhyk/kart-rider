@@ -64,6 +64,7 @@ let engine,
   fx,
   G = null,
   cup = null,
+  nextRoundIn = null,
   last = performance.now(),
   elapsed = 0,
   accum = 0,
@@ -279,6 +280,8 @@ function nextRound() {
 }
 function beginRound() {
   if (changing || !cup) return;
+  nextRoundIn = null;
+  document.querySelector(".round-detail").open = false;
   const track = cup.tracks[cup.round];
   if (settings.track !== track) {
     G = null;
@@ -314,6 +317,7 @@ function beginRound() {
   updateHUD();
 }
 function menu() {
+  nextRoundIn = null;
   clearInput();
   G = null;
   if (cup) {
@@ -409,7 +413,10 @@ function results() {
   $("cupnext").textContent = final
     ? `우승 · ${overall[0].name} · ${overall[0].points}점`
     : `다음 코스 · ${COURSES[cup.tracks[cup.round + 1]].name}`;
-  $("again").textContent = final ? "새 토너먼트 시작 →" : `다음 라운드 (${cup.round + 2}/3) →`;
+  $("again").textContent = final ? "새 토너먼트 시작 →" : `지금 다음 코스로 (${cup.round + 2}/3) →`;
+  nextRoundIn = final ? null : 6;
+  $("holdnext").hidden = final;
+  $("autonext").textContent = final ? "모든 코스를 완주했어요!" : "6초 뒤 다음 코스로 출발해요";
   $("roundroute").textContent = cup.tracks.map((track, i) => `${i < cup.rounds.length ? "✓ " : ""}${COURSES[track].name}`).join(" → ");
   const laps = G.racers[0].lapTimes,
     bestLap = Math.min(...laps);
@@ -757,6 +764,16 @@ function bindControls() {
   }
   $("start").onclick = start;
   $("again").onclick = nextRound;
+  const holdNext = () => {
+    if (nextRoundIn === null) return;
+    nextRoundIn = null;
+    $("autonext").textContent = "준비되면 다음 코스로 출발하세요";
+    $("holdnext").hidden = true;
+  };
+  $("holdnext").onclick = holdNext;
+  document.querySelector(".round-detail").addEventListener("toggle", (e) => {
+    if (e.target.open) holdNext();
+  });
   $("restart").onclick = beginRound;
   $("back").onclick = menu;
   $("quit").onclick = menu;
@@ -855,6 +872,11 @@ try {
       hudAt = elapsed;
     }
     if (G?.mode === "finished" && !shownResult) results();
+    if (G?.mode === "finished" && nextRoundIn !== null && !document.hidden) {
+      nextRoundIn -= Math.min(0.25, Math.max(0, raw));
+      $("autonext").textContent = `${Math.max(0, Math.ceil(nextRoundIn))}초 뒤 다음 코스로 출발해요`;
+      if (nextRoundIn <= 0) nextRound();
+    }
     // Render the lobby at 30 fps and races at 60; reduce resolution on slow devices.
     if (now - renderAt >= (G && G.mode !== "paused" ? 15 : 32)) {
       world.scene.render();

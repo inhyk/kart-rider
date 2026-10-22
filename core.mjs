@@ -386,7 +386,11 @@ function playerStep(g, r, input, dt) {
   const tr = g.course,
     kart = KARTS[g.options.kart] || KARTS[0];
   const turn = (input.right ? 1 : 0) - (input.left ? 1 : 0);
-  r.steer += (turn - r.steer) * (1 - Math.exp(-10 * dt));
+  // Assistance stabilizes manual input; it must never aim toward the road.
+  const response = g.options.assist ? 16 : 10;
+  r.steer += (turn - r.steer) * (1 - Math.exp(-response * dt));
+  if (g.options.assist && !turn && !input.drift)
+    r.steer *= Math.exp(-20 * dt);
   const was = r.drifting;
   r.drifting =
     !!input.drift &&
@@ -434,13 +438,7 @@ function playerStep(g, r, input, dt) {
     (r.drifting ? 1.25 : 1) *
     (r.stun > 0 ? 0.25 : 1);
   r.angle = wrapAngle(r.angle + yaw * dt);
-  if (g.options.assist && Math.abs(turn) < 0.1 && !r.drifting) {
-    const ideal = sample(tr, r.s + 18, -r.lane * 0.1).angle;
-    const delta = wrapAngle(ideal - r.angle);
-    if (Math.abs(delta) < 0.65)
-      r.angle = wrapAngle(r.angle + delta * dt * 0.85);
-  }
-  const grip = r.drifting ? 2.1 : 9 * kart.grip;
+  const grip = r.drifting ? 2.1 : (g.options.assist ? 12 : 9) * kart.grip;
   r.moveAngle = wrapAngle(
     r.moveAngle + wrapAngle(r.angle - r.moveAngle) * (1 - Math.exp(-grip * dt)),
   );

@@ -2123,3 +2123,7 @@ h1 {
 .round-detail summary {cursor:pointer; font-weight:700; color:#396247; padding:6px 0;}
 .round-detail p {font-size:10px; line-height:1.6; color:#718266;}
 @media(max-height:750px) { .result-panel {padding:22px;} .result-panel .trophy {font-size:28px; margin:0;} .result-stats {margin:8px 0; padding:8px 0;} }
+
+#autonext {font-size:11px;color:#44734e;margin:10px 0;}
+#holdnext {display:block;margin:8px auto 12px;font-size:11px;}
+#holdnext[hidden] {display:none;}
