@@ -290,7 +290,7 @@ function beginRound() {
   }
   audio.start();
   fx.clear();
-  G = createRace(settings);
+  G = createRace({ ...settings, laps: 1 });
   clearInput();
   shownResult = false;
   lastCount = 4;
@@ -448,7 +448,7 @@ function results() {
     }),
   );
   try {
-    const key = `pocket-gp-best-v2-${settings.track}-${settings.mode}-${settings.difficulty}`,
+    const key = `pocket-gp-best-v3-${settings.track}-${settings.mode}-${settings.difficulty}-${G.course.laps}`,
       old = +localStorage.getItem(key) || Infinity,
       best = Math.min(old, finishTime);
     localStorage.setItem(key, best);
@@ -917,7 +917,7 @@ try {
             track: G.course.id,
             rank: G.rank,
             lap: Math.min(
-              3,
+              G.course.laps,
               Math.floor(Math.max(0, G.racers[0].s) / G.course.length) + 1,
             ),
             time: G.time,

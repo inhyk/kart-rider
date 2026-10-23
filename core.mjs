@@ -114,7 +114,9 @@ export function seeded(seed = 12345) {
 }
 export function createRace(options = {}) {
   if (typeof options === "number") options = { track: options };
-  const tr = COURSES[options.track || 0],
+  const base = COURSES[options.track || 0],
+    laps = Number.isInteger(options.laps) && options.laps >= 1 && options.laps <= 3 ? options.laps : base.laps,
+    tr = { ...base, laps },
     g = {
       version: 2,
       track: options.track || 0,

@@ -418,3 +418,18 @@ test('steering assistance never pulls a released heading back toward the road', 
     assert.ok(r.s > start && r.s - start < 10, 'assistance cannot teleport progress back to the goal');
   }
 });
+
+test('one-lap tournaments finish on the first return to the start line on every course', () => {
+  for (let track = 0; track < 3; track++) {
+    const g = race(track, { mode: 'speed', assist: true, laps: 1 });
+    simulate(g, 180, autopilot);
+    assert.equal(g.mode, 'finished');
+    assert.equal(g.racers[0].lapTimes.length, 1);
+    assert.ok(g.racers[0].s >= g.course.length);
+    assert.ok(g.racers[0].s < g.course.length + 1);
+    assert.equal(COURSES[track].laps, 3, 'a race must not mutate the shared course');
+    const time = g.time;
+    simulate(g, 1, autopilot);
+    assert.equal(g.time, time, 'the completed course cannot start a second lap');
+  }
+});
